@@ -13,3 +13,4 @@ To preview locally:
 Simulate supply chain attack:
 - Toggle attack mode with `curl https://5649243.xyz/admin/toggle`
 - Get attack mode status with `curl https://5649243.xyz/admin/status`
+Note: It doesn't work on Eduroam
