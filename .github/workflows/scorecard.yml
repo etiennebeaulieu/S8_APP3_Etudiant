@@ -1,10 +1,12 @@
 name: Scorecard supply-chain security
 
 on:
-  push:
+  branch_protection_rule:
   pull_request:
+  push:
+    branches: [ $default-branch ]
   schedule:
-    - cron: "0 8 * * 1" # weekly check
+    - cron: $cron-weekly
 
 permissions:
   contents: read
