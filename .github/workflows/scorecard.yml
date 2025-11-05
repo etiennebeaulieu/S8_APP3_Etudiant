@@ -8,11 +8,12 @@ on:
   schedule:
     - cron: "0 8 * * 1" # weekly check
 
-permissions:
-  contents: read
-  security-events: write
+permissions: read-all
 
 jobs:
+    if: github.event.repository.default_branch == github.ref_name || github.event_name == 'pull_request'
+    permissions:
+      security-events: write
   analysis:
     runs-on: ubuntu-latest
     steps:
