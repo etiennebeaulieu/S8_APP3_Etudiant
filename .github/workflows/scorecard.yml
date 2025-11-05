@@ -23,7 +23,12 @@ jobs:
         with:
           results_file: results.json
           results_format: json # keep as JSON
-          publish_results: true # still publishes to Security tab
+          publish_results: false # still publishes to Security tab
+
+      - name: Show Score
+        run: |
+          score=$(jq '.score' results.json)
+          echo "Score is: $score"
 
       - name: Save Scorecard results as artifact
         uses: actions/upload-artifact@v4
