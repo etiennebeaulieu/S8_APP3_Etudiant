@@ -44,7 +44,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npm test || true
+          npm test
 
       - name: Build
         run: npm run build
