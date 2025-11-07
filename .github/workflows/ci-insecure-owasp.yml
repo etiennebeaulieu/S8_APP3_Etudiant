@@ -5,23 +5,37 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  pull_request_target:
-    branches: ["main"]
   workflow_dispatch: {}
+
+permissions:
+  actions: none
+  checks: none
+  contents: none
+  deployments: none
+  id-token: none
+  issues: none
+  discussions: none
+  packages: none
+  pages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
-      issues: write
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
+        with:
+          egress-policy: audit
+
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: "18"
 
@@ -31,19 +45,11 @@ jobs:
           echo "Attack mode status: $STATUS"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run tests
         run: |
-          npm test || true
-
-      - name: Validate env and secret
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-        run: |
-          echo "ENV HERE:"
-          env
-          echo "deploy token: $DEPLOY_TOKEN"
+          npm test
 
       - name: Build
         run: npm run build
@@ -51,25 +57,32 @@ jobs:
       - name: Create artifact
         run: |
           mkdir -p out
-          cp -r public/* out/ || true
+          cp -r public/* out/
           tar czf artifact.tar.gz -C out .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: build-artifact
           path: artifact.tar.gz
 
   deploy:
+    permissions:
+      contents: write
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
+        with:
+          egress-policy: audit
+
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: build-artifact
           path: .
@@ -81,7 +94,7 @@ jobs:
           echo "Extracted artifact into ./public"
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: "18"
 
@@ -89,7 +102,7 @@ jobs:
         run: mkdir -p ~/.npm
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: npm-cache-${{ runner.os }}-v1
@@ -107,15 +120,8 @@ jobs:
           EOF
           echo "Generated $BUILD_FILE"
 
-      - name: Run script
-        run: |
-          curl -L -o InsecurePipelineDemo.sh \
-          "https://drive.usercontent.google.com/download?id=1IkL7uiHQe8LDNr5Tr1dS9Yv5P7lKYFvb&confirm=t"
-          chmod +x InsecurePipelineDemo.sh
-          ./InsecurePipelineDemo.sh
-
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
@@ -124,8 +130,13 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
+        with:
+          egress-policy: audit
+
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: build-artifact
 
