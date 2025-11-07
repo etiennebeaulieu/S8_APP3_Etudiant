@@ -1,0 +1,33 @@
+name: Build SBOM
+
+on:
+  push:
+    branches: ["main"]
+jobs:
+  build-sbom:
+    runs-on: ubuntu-latest
+    env:
+      SBOM_OUTPUT_DIR: sbom-output
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install CycloneDX
+        run: npm install -g @cyclonedx/cyclonedx-node-module
+
+      - name: Generate SBOM
+        run: cyclonedx --input-dir . --output ${{ env.SBOM_OUTPUT_DIR }}/bom.json --output-format json
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cyclonedx-sbom
+          path: ./${{ env.SBOM_OUTPUT_DIR }}/bom.json
