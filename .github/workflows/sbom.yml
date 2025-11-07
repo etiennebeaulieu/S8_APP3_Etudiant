@@ -3,6 +3,9 @@ name: Build SBOM
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
 jobs:
   build-sbom:
     runs-on: ubuntu-latest
