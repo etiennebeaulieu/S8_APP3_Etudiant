@@ -42,7 +42,7 @@ jobs:
         run: npm install -g @cyclonedx/cyclonedx-npm
 
       - name: Generate SBOM
-        run: cyclonedx --input-dir . --output ${{ env.SBOM_OUTPUT_DIR }}/bom.json --output-format json
+        run: cyclonedx-npm --output-file ${{ env.SBOM_OUTPUT_DIR }}/bom.json --output-format json --validate --output-reproducible
 
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
